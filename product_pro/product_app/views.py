@@ -3,8 +3,12 @@ from .serializers import Product, ProductSerializer, ProductRetriveSerializer
 from rest_framework import generics
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
-#from rest_framework_simplejwt.authentication import JWTAuthentication
+from django.shortcuts import render
+from django.http import JsonResponse
+from .models import Product
+from django.db.models import Q
 from .pagination import CustomPagination
+
          
 class ProductCreate(generics.CreateAPIView):
     ''' Create a Product in Product Model'''
@@ -53,11 +57,9 @@ class ProductDelete(generics.DestroyAPIView):
     serializer_class = ProductSerializer
 
 
-from django.shortcuts import render
-from django.http import JsonResponse
-from .models import Product
-from django.db.models import Q
+
 def product_list(request):
+    '''Fetch data and show on product list page using datatble serverside '''
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         # Server-side processing for DataTables
         draw = int(request.GET.get('draw', 1))
