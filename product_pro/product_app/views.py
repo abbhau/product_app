@@ -82,6 +82,14 @@ def product_list(request):
         queryset = Product.objects.all()
         total_records = queryset.count()
          # Global search (applied to all columns)
+
+        prize_range = request.GET.get('price_range', '')
+        if prize_range:
+            prize_range_start = prize_range.split("-")[0]
+            prize_range_end = prize_range.split("-")[1]
+            queryset = queryset.filter(
+                total_prize__range=(prize_range_start, prize_range_end)
+            )
         global_search_value = request.GET.get('search[value]', '').strip()
         if global_search_value:
             queryset = queryset.filter(
@@ -101,6 +109,7 @@ def product_list(request):
         if search_columns[3]:  # Prize column
             queryset = queryset.filter(prize=search_columns[3])
         if search_columns[4]:  # Total Prize column
+            print(search_columns[4])
             queryset = queryset.filter(total_prize=search_columns[4])
         
         if order_dir == 'asc':

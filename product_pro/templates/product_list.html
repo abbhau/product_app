@@ -29,6 +29,21 @@
 </head>
 <body>
     <div class="container">
+        <div class="row">
+            <select name="price_range" id="price_range" class="form-select w-50 mx-auto">
+                <option value="">Select Price Range</option>
+                <option value="0-1000">0 - 1000</option>
+                <option value="1001-2000">1001 - 2000</option>
+                <option value="2001-3000">2001 - 3000</option>
+                <option value="3001-4000">3001 - 4000</option>
+                <option value="4001-5000">4001 - 5000</option>
+                <option value="5001-6000">5001 - 6000</option>
+                <option value="6001-7000">6001 - 7000</option>
+                <option value="7001-8000">7001 - 8000</option>
+                <option value="8001-9000">8001 - 9000</option>
+                <option value="9001-10000">9001 - 10000</option>
+              </select>
+        </div>
         <h1 class="mb-4">Product List</h1>
         <table id="product-datatable" class="table table-striped table-bordered" style="width:100%">
             <thead>
@@ -76,6 +91,7 @@
                         $('#product-datatable tfoot input').each(function(index) {
                             d[`columns[${index}][search][value]`] = this.value;
                         });
+                        d.price_range = $('#price_range').val()
                     }
                 },
                 "columns": [
@@ -106,6 +122,9 @@
             $('#product-datatable tfoot input').on('keyup change', function() {
                 table.ajax.reload(); // Reload data with new search criteria
             });
+            $('#price_range').change(function(){
+                table.ajax.reload();
+            })
         });
     </script>
 </body>
