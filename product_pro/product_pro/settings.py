@@ -40,8 +40,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'product_app',
     'auth_app',
-    #'rest_framework.authtoken',
-    'rest_framework_simplejwt'
+    'rest_framework.authtoken',
+    #'rest_framework_simplejwt'
 ]
 
 MIDDLEWARE = [
@@ -59,7 +59,7 @@ ROOT_URLCONF = 'product_pro.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
