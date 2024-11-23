@@ -21,7 +21,7 @@ class ProductCreate(generics.CreateAPIView):
 
 class ProductList(generics.ListAPIView):
     ''' Retrive all Products of Product Model also custom pagination class is use 
-        to retrieve 4 objects per page for goes on any page simply pass the page_no 
+        to retrieve 100 objects per page for goes on any page simply pass the page_no 
         value to 'page'query parameter .
     '''
     #authentication_classes = [TokenAuthentication]
