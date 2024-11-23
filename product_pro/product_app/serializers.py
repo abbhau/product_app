@@ -2,12 +2,13 @@ from rest_framework import serializers
 from .models import Product
 
 class ProductSerializer(serializers.ModelSerializer):
+    total_prize = serializers.FloatField(required=False)
     class Meta:
         model = Product
-        exclude = ['total_prize']
+        fields  = "__all__"
 
     def create(self, validated_data):
-        product = Product(**validated_data)
+        product = Product.objects.create(**validated_data)
 
         ''' To asign the value to the total_prize field
         we have to multiply quantity * prize '''
@@ -26,8 +27,3 @@ class ProductSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-class ProductRetriveSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Product
-        fields = "__all__"
-    

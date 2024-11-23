@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .serializers import Product, ProductSerializer, ProductRetriveSerializer
+from .serializers import Product, ProductSerializer
 from rest_framework import generics
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -24,11 +24,11 @@ class ProductList(generics.ListAPIView):
         to retrieve 100 objects per page for goes on any page simply pass the page_no 
         value to 'page'query parameter .
     '''
-    #authentication_classes = [TokenAuthentication]
-    #permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
     pagination_class = CustomPagination
     queryset = Product.objects.all()
-    serializer_class = ProductRetriveSerializer
+    serializer_class = ProductSerializer
 
 
 class ProductDetail(generics.RetrieveAPIView):
@@ -37,7 +37,7 @@ class ProductDetail(generics.RetrieveAPIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     queryset = Product.objects.all()
-    serializer_class = ProductRetriveSerializer
+    serializer_class = ProductSerializer
 
 
 class ProductUpdate(generics.UpdateAPIView):
