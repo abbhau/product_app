@@ -86,7 +86,7 @@
                     { "data": "total_prize" },
                 ],
                 "pageLength": 10, // Number of rows per page
-                "lengthMenu": [10, 25, 50, 100], // Options for rows per page
+                "lengthMenu": [100, 250, 500, 1000], // Options for rows per page
                 "searching": true, // Enable global search
                 "ordering": true, // Enable column ordering
                 "order": [[0, 'asc']], // Default ordering (ID ascending)
@@ -94,6 +94,12 @@
                 language: {
                     searchPlaceholder: "Search Product",
                 },
+                "columnDefs": [
+                {
+                    "targets": '_all',  // Apply to all columns
+                    "orderable": true,   // Enable sorting for all columns
+                }
+            ]
             });
 
             // Apply column-specific search on input change

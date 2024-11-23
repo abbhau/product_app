@@ -70,7 +70,14 @@ def product_list(request):
             search_value = request.GET.get(f'columns[{i}][search][value]', '').strip()
             search_columns.append(search_value)
 
-      
+         # Get the column to sort by and the sort direction
+        order_column_index = int(request.GET.get('order[0][column]', 0))  # Default column is the first one
+        order_dir = request.GET.get('order[0][dir]', 'asc')  # Default direction is ascending
+        
+        # Get the column name to sort by
+        columns = ['id', 'name', 'quantity', 'prize', 'total_prize']
+        order_column = columns[order_column_index]  # Get the name of the column to sort by
+
         # Query the database
         queryset = Product.objects.all()
         total_records = queryset.count()
@@ -96,6 +103,11 @@ def product_list(request):
         if search_columns[4]:  # Total Prize column
             queryset = queryset.filter(total_prize=search_columns[4])
         
+        if order_dir == 'asc':
+            queryset = queryset.order_by(order_column)  # Ascending order
+        else:
+            queryset = queryset.order_by(f'-{order_column}')  # Descending order
+
         # Pagination
         filtered_records = queryset.count()
         products = queryset[start:start + length]
