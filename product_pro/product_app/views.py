@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render,get_object_or_404
 from .serializers import Product, ProductSerializer
 from rest_framework import generics
 from rest_framework.authentication import TokenAuthentication
@@ -55,7 +55,6 @@ class ProductDelete(generics.DestroyAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-
 
 
 def product_list(request):
@@ -143,3 +142,12 @@ def product_list(request):
 
     # Render the template for non-AJAX requests
     return render(request, "product_list.html")
+
+
+def delete_product(request,pk):
+    if request.method == 'POST':
+        product = get_object_or_404(Product, id=pk)
+        product.delete()
+        return JsonResponse({'success': True})
+
+    return JsonResponse({'success': False})

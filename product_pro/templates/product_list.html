@@ -48,20 +48,24 @@
         <table id="product-datatable" class="table table-striped table-bordered" style="width:100%">
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <th>Sr no</th>
+                    <th>PRODUCT ID</th>
                     <th>Name</th>
                     <th>Quantity</th>
                     <th>Prize</th>
                     <th>Total Prize</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tfoot>
                 <tr>
+                    <th></th>
                     <th><input type="text" placeholder="Search ID"></th>
                     <th><input type="text" placeholder="Search Name"></th>
                     <th><input type="text" placeholder="Search Quantity"></th>
                     <th><input type="text" placeholder="Search Prize"></th>
                     <th><input type="text" placeholder="Search Total Prize"></th>
+                    <th></th>
                 </tr>
             </tfoot>
         </table>
@@ -95,11 +99,23 @@
                     }
                 },
                 "columns": [
+                    {"data":null,
+                     "render":function(data, type, row, meta){
+                          return meta.row + 1 + meta.settings._iDisplayStart;
+                        },
+                     "title":"Sr no"
+                    },
                     { "data": "id" },
                     { "data": "name" },
                     { "data": "quantity" },
                     { "data": "prize" },
                     { "data": "total_prize" },
+                    {
+                        "data":null,
+                        "render":function(data, type, row, meta){
+                         return '<button class="delete-btn" data-id="' + row.id + '">Delete</button>';                        },
+                        "title":"Action"
+                    }
                 ],
                 "pageLength": 10, // Number of rows per page
                 "lengthMenu": [100, 250, 500, 1000], // Options for rows per page
@@ -125,7 +141,36 @@
             $('#price_range').change(function(){
                 table.ajax.reload();
             })
+
+            
+        // Delete Button Click Handler
+        $('#product-datatable').on('click', '.delete-btn', function () {
+            var id = $(this).data('id');
+            var confirmation = confirm('Are you sure you want to delete this record?');
+            
+            if (confirmation) {
+                var deleteUrlBase = "{% url 'product_delete' 0 %}"; // Use 0 or dummy value
+                deleteUrlBase = deleteUrlBase.replace("0", id); // Remove the dummy value
+                // Trigger AJAX request to delete the record
+                $.ajax({
+                    url: deleteUrlBase,  // Django delete endpoint
+                    type: 'POST',
+                    data: {
+                        'csrfmiddlewaretoken': "{{csrf_token}}"  // Include CSRF token for safety
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            // Reload the DataTable after successful deletion
+                            table.ajax.reload();
+                        } else {
+                            alert('Error deleting record');
+                        }
+                    }
+                });
+            }
         });
+
+     });
     </script>
 </body>
 </html>
