@@ -81,6 +81,12 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 
+    <!-- Buttons Extension JS -->
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+
+    <!-- Additional Button JS (for CSV/Excel) -->
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
     <script>
         $(document).ready(function() {
             // Initialize DataTable
@@ -96,14 +102,23 @@
                             d[`columns[${index}][search][value]`] = this.value;
                         });
                         d.price_range = $('#price_range').val()
-                    }
                 },
+                "error": function(xhr, error, code) {
+                    // Handle server errors with status code >= 400
+                    let errorMessage = "An unexpected error occurred.";
+                    if (xhr.responseJSON && xhr.responseJSON.error) {
+                        errorMessage = xhr.responseJSON.error;
+                    }
+                    alert("Error: " + errorMessage); // Display error popup
+                  }
+               },
                 "columns": [
                     {"data":null,
                      "render":function(data, type, row, meta){
                           return meta.row + 1 + meta.settings._iDisplayStart;
                         },
-                     "title":"Sr no"
+                     "title":"Sr no",
+                     "orderable": false // Prevent sorting on this column
                     },
                     { "data": "id" },
                     { "data": "name" },
@@ -122,7 +137,19 @@
                 "searching": true, // Enable global search
                 "ordering": true, // Enable column ordering
                 "order": [[0, 'asc']], // Default ordering (ID ascending)
-                "dom": 'lfrtip', // Layout
+                "dom": 'Blfrtip', // Include button layout
+                "buttons": [
+                    {
+                        text: 'Export to CSV',
+                        action: function (e, dt, node, config) {
+                            var params = dt.ajax.params();
+                            var queryString = $.param(params);
+
+                            // Redirect to export URL
+                            window.location.href = `{% url 'product_list_csv' %}?` + queryString;
+                        }
+                    }
+                ],
                 language: {
                     searchPlaceholder: "Search Product",
                 },
