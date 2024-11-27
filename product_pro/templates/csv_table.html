@@ -25,7 +25,7 @@
             $('#csv-data-table').DataTable({
                 "processing": true,
                 "serverSide": true,
-                'searching':true,
+                'searching':false,
                 "ajax": {
                     "url": "{% url 'fetch_csv_data' %}",
                     "type": "GET"
