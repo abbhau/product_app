@@ -10,7 +10,8 @@ urlpatterns = [
     path('', include('auth_app.urls')),
     path('tokens/', views.obtain_auth_token),
     path('', include('csv_app.urls')),
-    path('', include('excel_app.urls'))
+    path('', include('excel_app.urls')),
+     path('__debug__/', include('debug_toolbar.urls')),
     #path('generatetoken/',token_obtain_pair),
     #path('tokenrefresh/',token_refresh)
 ]

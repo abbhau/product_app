@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'auth_app',
     'excel_app',
     'rest_framework.authtoken',
+    "debug_toolbar"
     #'rest_framework_simplejwt'
 ]
 
@@ -49,6 +50,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -72,6 +74,12 @@ TEMPLATES = [
         },
     },
 ]
+
+INTERNAL_IPS = [
+    '127.0.0.1',  # Localhost
+    # Add any other internal IP addresses you want to allow
+]
+
 
 WSGI_APPLICATION = 'product_pro.wsgi.application'
 

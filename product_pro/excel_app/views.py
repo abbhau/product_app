@@ -3,8 +3,15 @@ from django.http import HttpResponse
 from django.db.models import Prefetch
 from openpyxl.utils import get_column_letter
 from .models import School, Student, Teacher, Class, Subject
+from django.db import connection
+import time
 
 def export_school_data_to_excel(request):
+     # Start time for performance measurement
+    start_time = time.time()
+
+    # Clear any previous queries to get a fresh count
+    connection.queries.clear()
     # Prefetch related data to minimize queries (only selecting necessary fields)
     students = Student.objects.only('id', 'name', 'age', 'grade_level')
     teachers = Teacher.objects.only('id', 'name', 'subject', 'hire_date')
@@ -44,10 +51,10 @@ def export_school_data_to_excel(request):
 
         # Iterate through schools and write data row by row
         for school in schools:
-            students_count = school.students.count()
-            teachers_count = school.teachers.count()
-            classes_count = school.classes.count()
-            subjects_count = school.subjects.count()
+            students_count = len(school.students.all())
+            teachers_count = len(school.teachers.all())
+            classes_count = len(school.classes.all())
+            subjects_count = len(school.subjects.all())
             max_length = max(
                 students_count, teachers_count, classes_count, subjects_count
             )
@@ -98,5 +105,13 @@ def export_school_data_to_excel(request):
 
             # Set the width of the column to be the greater of the header length or content length
             sheet.column_dimensions[column_letter].width = max_length + 2  # Add padding for aesthetics
+    # Measure execution time
+    end_time = time.time()
+    execution_time = end_time - start_time
+    print(f"Execution time: {execution_time:.4f} seconds")
 
+    # Print out SQL queries
+    print(f"Number of queries: {len(connection.queries)}")
+    for query in connection.queries:
+        print(query['sql'])
     return response
