@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'product_app',
     'auth_app',
+    'excel_app',
     'rest_framework.authtoken',
     #'rest_framework_simplejwt'
 ]
