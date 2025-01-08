@@ -30,6 +30,9 @@
 <body>
     <div class="container">
         <div class="row">
+            <div class="d-flex justify-content-end mb-3">
+                <a href="/api/product/create/" class="btn btn-primary">Create Product</a>
+            </div>
             <select name="price_range" id="price_range" class="form-select w-50 mx-auto">
                 <option value="">Select Price Range</option>
                 <option value="0-1000">0 - 1000</option>
@@ -128,7 +131,11 @@
                     {
                         "data":null,
                         "render":function(data, type, row, meta){
-                         return '<button class="delete-btn" data-id="' + row.id + '">Delete</button>';                        },
+                            return `
+                        <button class="update-btn" data-id="${row.id}">Update</button>
+                        <button class="delete-btn" data-id="${row.id}">Delete</button>
+                        `;  
+                     },
                         "title":"Action"
                     }
                 ],
@@ -169,7 +176,12 @@
                 table.ajax.reload();
             })
 
-            
+     $(document).on('click', '.update-btn', function () {
+        const id = $(this).data('id');
+        // Redirect to update page or open a modal for updating
+        window.location.href = `/api/product/${id}/update/`;
+    });
+
         // Delete Button Click Handler
         $('#product-datatable').on('click', '.delete-btn', function () {
             var id = $(this).data('id');
