@@ -257,7 +257,8 @@ def product_create_view(request):
 def product_update_view(request, pk):
     product = get_object_or_404(Product, pk=pk)
     if request.method == "POST":
-        form = ProductForm(request.POST, instance=product)
+        brands = request.POST.getlist('brand')
+        form = ProductForm(request.POST, instance=product, brands=brands)
         if form.is_valid():
             form.save()
             messages.success(request, "Product updated successfully!")

@@ -67,7 +67,15 @@
 
         <div class="form-group">
             <label for="{{ form.brand.id_for_label }}">{{ form.brand.label }}</label>
-            <select class="js-data-example-ajax form-control" name="brand" multiple="multiple"></select>
+            <select class="js-data-example-ajax form-control" name="brand" multiple="multiple">
+            {% if form.fields.brand.initial %}
+                {% for brand in form.fields.brand.initial %}
+                    <option value="{{ brand.id }}" selected>
+                        {{ brand.brand_name }}
+                    </option>
+                {% endfor %}
+            {% endif %}
+            </select>
             {% if form.brand.errors %}
                 <div class="error">
                     {{ form.brand.errors|join:", " }}

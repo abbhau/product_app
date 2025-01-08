@@ -20,17 +20,20 @@ class ProductForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         # Store the brands passed in the form initialization
+
         if brands:
-            self.cleaned_brands = brands
-        else:
-            self.cleaned_brands = []
+            print("bbbbbbbbbbb", brands)
+            self.fields['brand'].queryset = Brand.objects.filter(id__in=brands)
+
+        elif self.instance and self.instance.pk:
+            self.fields['brand'].initial = self.instance.brand.all()
 
     def save(self, commit=True):
         product = super().save(commit=False)
         if commit:
             product.save()
+            product.total_prize = product.quantity * product.prize
             # Update the ManyToManyField only after saving the product instance
-            if hasattr(self, 'cleaned_brands'):
-                product.brands.set(self.cleaned_brands)
-        print(product.brands.all())
+            product.brand.set(self.cleaned_data['brand'])
+            product.save()
         return product
