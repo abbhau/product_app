@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/css/select2.min.css" rel="stylesheet">
+    <style>
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            font-weight: bold;
+        }
+        .form-group .error {
+            color: red;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-5">
+    <h2>{{ form.instance.pk|yesno:"Update Product,Create Product" }}</h2>
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+            {{ form.name }}
+            {% if form.name.errors %}
+                <div class="error">
+                    {{ form.name.errors|join:", " }}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.quantity.id_for_label }}">{{ form.quantity.label }}</label>
+            {{ form.quantity }}
+            {% if form.quantity.errors %}
+                <div class="error">
+                    {{ form.quantity.errors|join:", " }}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.prize.id_for_label }}">{{ form.prize.label }}</label>
+            {{ form.prize }}
+            {% if form.prize.errors %}
+                <div class="error">
+                    {{ form.prize.errors|join:", " }}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.total_prize.id_for_label }}">{{ form.total_prize.label }}</label>
+            {{ form.total_prize }}
+            {% if form.total_prize.errors %}
+                <div class="error">
+                    {{ form.total_prize.errors|join:", " }}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.brand.id_for_label }}">{{ form.brand.label }}</label>
+            <select class="js-data-example-ajax form-control" name="brand" multiple="multiple"></select>
+            {% if form.brand.errors %}
+                <div class="error">
+                    {{ form.brand.errors|join:", " }}
+                </div>
+            {% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            {{ form.instance.pk|yesno:"Update,Create" }}
+        </button>
+    </form>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/js/select2.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('.js-data-example-ajax').select2({
+        ajax: {
+            url: "{% url 'brand_list_api' %}",
+            dataType: 'json',
+            delay: 1000,
+            data: function (params) {
+            return {
+                q: params.term,  // The search query (user input)
+                page: params.page || 1
+            };
+            },
+            processResults: function (data) {
+            return {
+                results: data.items.map(function (repo) {
+                    return {
+                        id: repo.id,
+                        text: repo.brand_name
+                    };
+                }),
+                pagination: {
+                    more: data.pagination.more 
+                }
+            };
+            }
+        }
+        });
+           
+});
+</script>
+</body>
+</html>

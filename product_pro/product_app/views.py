@@ -233,3 +233,68 @@ def product_list_csv(request):
         writer.writerow([product.id, product.name, product.quantity, product.prize, product.total_prize])
 
     return response
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import Product
+from .forms import ProductForm
+
+# Product Create View
+def product_create_view(request):
+    if request.method == "POST":
+        brands = request.POST.getlist('brand')
+        form = ProductForm(request.POST, brands=brands)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Product created successfully!")
+            return redirect('product_list')  # Change 'product_list' to your target URL
+    else:
+        form = ProductForm()
+    return render(request, 'product_form.html', {'form': form})
+
+# Product Update View
+def product_update_view(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    if request.method == "POST":
+        form = ProductForm(request.POST, instance=product)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Product updated successfully!")
+            return redirect('product_list')  # Change 'product_list' to your target URL
+    else:
+        form = ProductForm(instance=product)
+    return render(request, 'product_form.html', {'form': form})
+
+
+
+from django.http import JsonResponse
+from .models import Brand
+from django.core.paginator import Paginator
+
+def brand_list_api(request):
+    q = request.GET.get('q', '')  # Get the search term (user input)
+    page = int(request.GET.get('page', 1))  # Get the page number, default to 1 if not provided
+
+    # Define the number of items per page
+    items_per_page = 10
+
+    # Calculate the starting and ending index for pagination
+    start = (page - 1) * items_per_page
+    end = page * items_per_page
+
+    # Filter the brands based on the search term (case-insensitive)
+    brands = Brand.objects.filter(brand_name__icontains=q)[start:end] 
+
+    # Prepare the data in the expected format
+    items = [{'id': brand.id, 'brand_name': brand.brand_name} for brand in brands]
+
+    # Determine if more results are available
+    total_count = Brand.objects.filter(brand_name__icontains=q).count()
+    has_more = end < total_count
+
+    # Return the results in the required format for Select2
+    return JsonResponse({
+        'items': items,
+        'pagination': {'more': has_more} 
+    })
