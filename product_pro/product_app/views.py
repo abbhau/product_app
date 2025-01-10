@@ -10,6 +10,11 @@ from django.db.models import Q
 from .pagination import CustomPagination
 from django.http import HttpResponse
 import csv
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.lib import colors
+import io
 
          
 class ProductCreate(generics.CreateAPIView):
@@ -57,6 +62,124 @@ class ProductDelete(generics.DestroyAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+
+
+def generate_reportlab_pdf_response(request):
+    """
+    Generate a large PDF using ReportLab and send it as an HTTP response.
+    Args:
+        request (HttpRequest): The Django HTTP request object.
+    Returns:
+        HttpResponse: The HTTP response with the PDF attached.
+    """
+    # Extract column-specific search terms
+    search_columns = []
+    for i in range(5):  # Number of columns in the table
+        search_value = request.GET.get(f'columns[{i}][search][value]', '').strip()
+        search_columns.append(search_value)
+
+    # Get the column to sort by and the sort direction
+    order_column_index = int(request.GET.get('order[0][column]', 0)) -1 #exclude sr no
+    order_dir = request.GET.get('order[0][dir]', 'asc')  # Default direction is ascending
+    
+    # Get the column name to sort by
+    columns = ['id', 'name', 'quantity', 'prize', 'total_prize']
+    order_column = columns[order_column_index]  # Get the name of the column to sort by
+
+    # Query the database
+    queryset = Product.objects.all()
+        # Global search (applied to all columns)
+
+    prize_range = request.GET.get('price_range', '')
+    if prize_range:
+        prize_range_start = prize_range.split("-")[0]
+        prize_range_end = prize_range.split("-")[1]
+        queryset = queryset.filter(
+            total_prize__range=(prize_range_start, prize_range_end)
+        )
+    global_search_value = request.GET.get('search[value]', '').strip()
+    if global_search_value:
+        queryset = queryset.filter(
+            Q(name__icontains=global_search_value) |
+            Q(quantity__icontains=global_search_value) |
+            Q(prize__icontains=global_search_value) |
+            Q(total_prize__icontains=global_search_value)
+        )
+
+    # Column-specific filters
+    if search_columns[0]:  # ID column
+        queryset = queryset.filter(id=search_columns[0])
+    if search_columns[1]:  # Name column
+        queryset = queryset.filter(name__icontains=search_columns[1])
+    if search_columns[2]:  # Quantity column
+        queryset = queryset.filter(quantity=search_columns[2])
+    if search_columns[3]:  # Prize column
+        queryset = queryset.filter(prize=search_columns[3])
+    if search_columns[4]:  # Total Prize column
+        print(search_columns[4])
+        queryset = queryset.filter(total_prize=search_columns[4])
+    
+    if order_dir == 'asc':
+        queryset = queryset.order_by(order_column)  # Ascending order
+    else:
+        queryset = queryset.order_by(f'-{order_column}')  # Descending order
+
+    products = [
+            {
+                "id": product.id,
+                "name": product.name,
+                "quantity": product.quantity,
+                "prize": product.prize,
+                "total_prize": product.total_prize,
+            }
+            for product in queryset
+        ]
+    # Create a buffer to hold the PDF
+    buffer = io.BytesIO()
+
+    # Create the PDF document
+    pdf = SimpleDocTemplate(buffer, pagesize=A4)
+    elements = []
+
+    # Define the table header
+    header = [ ['id', 'name', 'quantity', 'prize', 'total_prize']]
+
+    # Process data in batches
+    batch_size = 50000
+    for i in range(0, len(products), batch_size):
+        batch = products[i:i + batch_size]
+
+        # Convert batch to table data
+        table_data = header + [[item['id'], item['name'], item['quantity'], item['prize'], item['total_prize']] for item in batch]
+
+        # Create a table
+        table = Table(table_data)
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ]))
+
+        # Add the table to the PDF
+        elements.append(table)
+
+    # Build the PDF into the buffer
+    pdf.build(elements)
+
+    # Get the value of the buffer
+    buffer.seek(0)
+    pdf_data = buffer.getvalue()
+    buffer.close()
+
+    # Create the HTTP response
+    response = HttpResponse(pdf_data, content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="products.pdf"'
+
+    return response
 
 
 def product_list(request):
@@ -130,7 +253,7 @@ def product_list(request):
             queryset = queryset.order_by(order_column)  # Ascending order
         else:
             queryset = queryset.order_by(f'-{order_column}')  # Descending order
-    
+
         # Pagination
         filtered_records = queryset.count()
         products = queryset[start:start + length]
@@ -219,7 +342,6 @@ def product_list_csv(request):
     else:
         queryset = queryset.order_by(f'-{order_column}')  # Descending order
 
-    
     # Create the CSV response
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="products.csv"'

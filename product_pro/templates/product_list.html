@@ -155,6 +155,16 @@
                             // Redirect to export URL
                             window.location.href = `{% url 'product_list_csv' %}?` + queryString;
                         }
+                    },
+                    {
+                        text: 'Export to PDF',
+                        action: function (e, dt, node, config) {
+                            var params = dt.ajax.params();
+                            var queryString = $.param(params);
+
+                            // Redirect to export PDF URL
+                            window.location.href = `{% url 'product_list_pdf' %}?` + queryString;
+                        }
                     }
                 ],
                 language: {

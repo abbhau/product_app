@@ -109,17 +109,17 @@ from product_app.models import Product, Brand
 # print("Data added successfully!")
 
 
-brand_objects = []
-for i in range(1, 200001):  # Generate 200,000 records
-    brand_objects.append(Brand(brand_name=f"Brand {i}"))
+# brand_objects = []
+# for i in range(1, 200001):  # Generate 200,000 records
+#     brand_objects.append(Brand(brand_name=f"Brand {i}"))
 
 
 
-# Bulk create in batches
-batch_size = 10000
+# # Bulk create in batches
+# batch_size = 10000
 
-for start in range(0, len(brand_objects), batch_size):
-    Brand.objects.bulk_create(brand_objects[start:start+batch_size])
+# for start in range(0, len(brand_objects), batch_size):
+#     Brand.objects.bulk_create(brand_objects[start:start+batch_size])
 
 
 

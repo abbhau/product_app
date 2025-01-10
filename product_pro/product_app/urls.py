@@ -1,6 +1,6 @@
 from .views import (ProductCreate, ProductList, ProductDetail, ProductUpdate, ProductDelete,
                      product_list, delete_product, product_list_csv, product_create_view,
-                 product_update_view, brand_list_api)
+                 product_update_view, brand_list_api, generate_reportlab_pdf_response)
 from django.urls import path
 
 urlpatterns = [
@@ -13,6 +13,7 @@ urlpatterns = [
     path('products/', product_list, name='product_list'),
     path('product/delete/<int:pk>/', delete_product, name='product_delete'),
     path('products/csv/', product_list_csv, name='product_list_csv'),
+    path('products/pdf/', generate_reportlab_pdf_response, name = 'product_list_pdf'),
 
     path('product/create/', product_create_view, name='product_create'),
     path('product/<int:pk>/update/', product_update_view, name='product_update'),
