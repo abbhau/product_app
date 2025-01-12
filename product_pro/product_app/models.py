@@ -12,4 +12,7 @@ class Product(models.Model):
     total_prize = models.FloatField( default=0)
     brand = models.ManyToManyField(Brand, blank=True)
 
+    def __str__(self):
+        return self.name
+
 

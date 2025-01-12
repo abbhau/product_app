@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Order</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/css/select2.min.css" rel="stylesheet">
+
+</head>
+<body>
+    <div class="container mt-4">
+        <h1>Create Order</h1>
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                {{ form.customer.label_tag }}
+                {{ form.customer }}
+                {% if form.customer.errors %}
+                    <div class="text-danger">
+                        {{ form.customer.errors|join:", " }}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="mb-3">
+                {{ form.order_date.label_tag }}
+                {{ form.order_date }}
+                {% if form.order_date.errors %}
+                    <div class="text-danger">
+                        {{ form.order_date.errors|join:", " }}
+                    </div>
+                {% endif %}
+            </div>
+            <div id="order-items-formset">
+                {{ orderitems_formset.management_form }}
+                {% for form in orderitems_formset %}
+                    <div class="form-row">
+                        {{ form.id }}
+                        {{ form.non_field_errors }}
+                        <div class="col-md-6 mb-3">
+                            
+                            {{ form.product.label }}
+                            <select name="{{ form.prefix }}-product" id="id_{{ form.prefix }}-product" class="js-data-example-ajax form-control">
+                                {% if form.fields.product.initial %}
+                                <option value="{{ form.fields.product.initial.id }}" selected>
+                                    {{ form.fields.product.initial.name }}
+                                </option>
+                                {% endif %}
+                            </select>
+                            {% if form.product.errors %}
+                                <div class="text-danger">
+                                    {{ form.product.errors|join:", " }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.quantity.label_tag }}
+                            {{ form.quantity }}
+                            {% if form.quantity.errors %}
+                                <div class="text-danger">
+                                    {{ form.quantity.errors|join:", " }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            {% if form.instance.pk %} 
+                                <label for="{{ form.prefix }}-DELETE">Delete:</label>
+                                {{ form.DELETE }}
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <button type="button" id="add-form" class="btn btn-primary">Add Item</button>
+            <button type="submit" class="btn btn-success">Submit Order</button>
+        </form>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/js/select2.min.js"></script>
+<script>
+    
+$(document).ready(function () {
+
+    function initialize_select2(){$('.js-data-example-ajax').select2({
+        ajax: {
+            url: "{% url 'product_list_api' %}",
+            dataType: 'json',
+            delay: 1000,
+            data: function (params) {
+            return {
+                q: params.term,  // The search query (user input)
+                page: params.page || 1
+            };
+            },
+            processResults: function (data) {
+            return {
+                results: data.items.map(function (repo) {
+                    return {
+                        id: repo.id,
+                        text: repo.product_name
+                    };
+                }),
+                pagination: {
+                    more: data.pagination.more 
+                }
+            };
+            },
+            placeholder: 'Select a product',
+            allowClear: true
+        }
+        });
+    }
+
+    initialize_select2()
+
+    const formsetContainer = $('#order-items-formset'); // Formset container
+    const totalForms = $('#id_order_items-TOTAL_FORMS'); // TOTAL_FORMS hidden field
+    const initialForms = $('#id_order_items-INITIAL_FORMS'); // INITIAL_FORMS hidden field
+
+    function add_remove_btn(){
+        const formCount = parseInt(totalForms.val(), 10);
+        const initalformCount = parseInt(initialForms.val(), 10);
+        if (formCount > initalformCount && initalformCount > 0 ) {
+            const newForm = formsetContainer.find('.form-row:last-child')
+            newForm.append(`<button type="button" class="btn btn-danger mb-2 remove-btn">Remove</button>`);
+        }
+}
+    
+    $('#add-form').on('click', function() {
+            const formCount = parseInt(totalForms.val(), 10); // Current form count
+            // Clone the last form row
+            const newForm = formsetContainer.find('.form-row:last-child').clone();
+            newForm.find('.select2-container').remove();
+             // Ensure the cloned form doesn't have any existing remove button
+            newForm.find('.remove-btn').remove();
+
+             // Remove the delete checkbox and label from the cloned form
+             newForm.find('input[type="checkbox"][name$="-DELETE"]').remove();
+             newForm.find('label[for$="-DELETE"]').remove();
+
+            newForm.find('.js-data-example-ajax').each(function () {
+                const name = $(this).attr('name').replace(`-${formCount - 1}-`, `-${formCount}-`);
+                const id = $(this).attr('id').replace(`-${formCount - 1}-`, `-${formCount}-`);
+                    const newSelect = $(
+                        `<select name="${name}" id="${id}" class="js-data-example-ajax form-select"></select>`
+                    )
+                    $(this).replaceWith(newSelect);
+            });
+
+            // Update the indices of the cloned form fields
+            newForm.find('input, textarea').each(function() {
+                const name = $(this).attr('name').replace(`-${formCount - 1}-`, `-${formCount}-`);
+                const id = $(this).attr('id').replace(`-${formCount - 1}-`, `-${formCount}-`);
+                $(this).attr('name', name).attr('id', id).val(''); // Clear the value for the new form
+            });
+            
+            // Update the `for` attribute of labels
+            newForm.find('label').each(function() {
+                const newFor = $(this).attr('for').replace(`-${formCount - 1}-`, `-${formCount}-`);
+                $(this).attr('for', newFor);
+            });
+             // Remove the "Remove" button from the current last form row
+            formsetContainer.find('.form-row:last-child .remove-btn').remove();
+
+            newForm.append(`<button type="button" class="btn btn-danger mb-2 remove-btn">Remove</button>`);
+            // Append the new form to the container
+            formsetContainer.append(newForm);
+            initialize_select2()
+            // Increment the total form count
+            totalForms.val(formCount + 1);
+        });
+
+    // Event listener to remove the last form when the remove button is clicked
+    $(document).on('click', '.remove-btn', function () {
+        const formCount = parseInt(totalForms.val(), 10); 
+        if (formCount > 1) {
+            $(this).closest('.form-row').remove();
+            totalForms.val(formCount - 1); 
+            add_remove_btn()
+        } else {
+            alert('You must have at least one form!');
+        }
+    });
+
+     // $('#add-form').on('click', function() {
+    //     const formsetContainer = $('#order-items-formset'); // Formset container
+    //     const totalForms = $('#id_order_items-TOTAL_FORMS'); // TOTAL_FORMS hidden field
+    //     const formCount = parseInt(totalForms.val(), 10); // Current form count
+
+    //     // Create a new form dynamically with the updated form count
+    //     const newForm = `
+    //         <input type="hidden" name="order_items-${formCount}-id" id="id_order_items-${formCount}-id">
+
+    //         <div class="col-md-6 mb-3">
+    //             <label for="id_order_items-${formCount}-product">Product:</label>
+    //             <select name="order_items-${formCount}-product" id="id_order_items-${formCount}-product" class="js-data-example-ajax form-control">
+    //                 <!-- Options will be dynamically loaded here -->
+    //             </select>
+    //         </div>
+    //         <div class="col-md-6 mb-3">
+    //             <label for="id_order_items-${formCount}-quantity">Quantity:</label>
+    //             <input type="number" name="order_items-${formCount}-quantity" value="1" class="form-control" min="0" id="id_order_items-${formCount}-quantity">
+    //         </div>
+    //     `;
+
+    //     // Append the new form to the formset container
+    //     formsetContainer.append(newForm);
+
+    //     // Update the total forms count
+    //     totalForms.val(formCount + 1);
+        
+    //     initialize_select2()
+    // })
+
+});
+</script>
+</body>
+</html>

@@ -22,7 +22,6 @@ class ProductForm(forms.ModelForm):
         # Store the brands passed in the form initialization
 
         if brands:
-            print("bbbbbbbbbbb", brands)
             self.fields['brand'].queryset = Brand.objects.filter(id__in=brands)
 
         elif self.instance and self.instance.pk:
