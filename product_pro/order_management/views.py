@@ -10,8 +10,7 @@ from django.views import View
 class AddProductView(View):
     def get(self, request):
         form = OrderForm()
-        order = Order()
-        orderitems_formset = formset(instance=order)
+        orderitems_formset = formset()
         context = {"form": form, "orderitems_formset": orderitems_formset}
         return render(request, "order_form.html", context)
 
@@ -42,9 +41,6 @@ class AddProductView(View):
         else:
             # If the order form is invalid, initialize an empty formset for rendering
             orderitems_formset = formset(request.POST)
-            print(form.errors)
-            print(orderitems_formset.errors)
-            print(orderitems_formset.non_form_errors())
 
         # If the form or formset is invalid, re-render the page with errors
         context = {"form": form, "orderitems_formset": orderitems_formset}
@@ -89,6 +85,7 @@ class UpdateProductView(View):
 
                 # Delete removed items
                 for orderitem in orderitems_formset.deleted_objects:
+                    print(f"Deleting: {orderitem}")
                     orderitem.delete()
                 
                 order.calculate_total()

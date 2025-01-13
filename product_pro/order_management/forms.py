@@ -44,6 +44,14 @@ class OrderItemForm(forms.ModelForm):
         orderitem.save()
         return orderitem
 
+from django.forms.models import BaseInlineFormSet
+
+# class CustomFormSet(BaseInlineFormSet):
+#     def add_fields(self, form, index):
+#         super().add_fields(form, index)
+#         if 'DELETE' in form.fields:
+#             form.fields['DELETE'].widget = forms.HiddenInput()
+#             form.fields['DELETE'].label = ''  # Remove the label
 
 formset = inlineformset_factory(
     Order,
